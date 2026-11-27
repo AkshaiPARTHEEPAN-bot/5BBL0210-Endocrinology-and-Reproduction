@@ -13,6 +13,12 @@ The home page lists all your lectures in number order (name files like `Lecture 
 
 Notes and quizzes are made the first time you open them and saved; you can rewrite them or make new questions any time.
 
+Each lecture has a number (guessed from file names like `Lecture 3 – Thyroid.pdf`, editable with *Edit name / number*) that sets its place on the home page.
+
+### Built-in lectures
+
+**Lecture 1 – Insulin and Diabetes** comes ready to use: 40 flashcards, revision notes and a 10-question quiz written from the 40 lecture slides (`src/content/lecture-01-insulin-diabetes.js`). It needs no API key. The slide PDF isn't included in the site; tap *Add slide file* on the lecture page once to view the slides on your device. Deleting a built-in lecture removes it for good on that device.
+
 ### Flashcards
 
 - **Upload** lecture slides as PowerPoint (`.pptx`) or PDF. The text of every slide (plus speaker notes in `.pptx`) is read in your browser.

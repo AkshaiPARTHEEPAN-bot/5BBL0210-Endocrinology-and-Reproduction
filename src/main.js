@@ -8,6 +8,8 @@ import { notesView } from './views/notes.js';
 import { quizView, endQuiz } from './views/quiz.js';
 import { settingsView } from './views/settings.js';
 import { newToken } from './ui.js';
+import { seedBuiltins } from './store.js';
+import { BUILTIN_LECTURES } from './content/index.js';
 
 // Screens:
 //   #/                          home: all lectures + due count
@@ -34,4 +36,4 @@ function route() {
 }
 
 window.addEventListener('hashchange', route);
-route();
+seedBuiltins(BUILTIN_LECTURES).catch((e) => console.error('Could not add built-in lectures', e)).finally(route);

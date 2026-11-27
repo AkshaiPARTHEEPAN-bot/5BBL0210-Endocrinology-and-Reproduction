@@ -28,7 +28,7 @@ export function uploadView() {
         const { kind, slides, scanned } = await ai.readSlideFile(file);
         msg.textContent = `Read ${plural(slides.length, 'slide')}. Writing flashcards… (this can take a minute)`;
         const cards = await ai.generateCards(await ai.lectureInput({ title }, { file, slides, scanned }));
-        const lecture = store.addLecture(title, { fileName: file.name, kind, slideCount: slides.length, scanned }, cards);
+        const lecture = store.addLecture(title, { number: store.guessNumber(file.name), fileName: file.name, kind, slideCount: slides.length, scanned }, cards);
         await ai.saveSlideFile(lecture.id, file, slides);
         row.className = 'status ok';
         msg.replaceChildren(`✓ ${plural(cards.length, 'card')} from ${plural(slides.length, 'slide')} `, h('a', { href: `#/lecture/${lecture.id}` }, 'Open'));
@@ -54,7 +54,7 @@ export function uploadView() {
     h('main', {},
       !settings.apiKey && h('p', { class: 'notice' }, 'You need a Claude API key first. ', h('a', { href: '#/settings' }, 'Open Settings'), '.'),
       input, drop,
-      h('p', { class: 'muted small-text' }, 'Name your files like “Lecture 1 – Hormones.pdf” so they list in order. The slide text is sent to Claude, which writes 15–30 flashcards per lecture. Your files stay on this device.'),
+      h('p', { class: 'muted small-text' }, 'Name files like “Lecture 3 – Thyroid.pdf” and the lecture number is filled in for you (you can change it on the lecture page). The slide text is sent to Claude, which writes 15–30 flashcards per lecture. Your files stay on this device.'),
       statusList,
     ),
   );

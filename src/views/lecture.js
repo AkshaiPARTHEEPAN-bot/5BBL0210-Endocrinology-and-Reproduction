@@ -3,6 +3,32 @@ import * as idb from '../idb.js';
 import { isDueNow, startOfDay, DAY } from '../srs.js';
 import { h, go, render, topbar, plural, editDialog, loadAI, newToken, isCurrent } from '../ui.js';
 
+function detailsDialog(lecture, onSave) {
+  const name = h('input', { type: 'text', value: lecture.title });
+  const num = h('input', { type: 'number', inputMode: 'numeric', min: 1, max: 99, value: lecture.number ?? '', placeholder: 'e.g. 3' });
+  const dlg = h('dialog', { class: 'dialog' },
+    h('form', { method: 'dialog', onsubmit: (e) => {
+      e.preventDefault();
+      if (!name.value.trim()) { alert('Please give the lecture a name.'); return; }
+      const n = parseInt(num.value, 10);
+      onSave({ title: name.value.trim(), number: Number.isFinite(n) ? n : null });
+      dlg.close();
+    } },
+      h('h2', {}, 'Lecture details'),
+      h('label', {}, 'Name', name),
+      h('label', {}, 'Lecture number (sets the order on the home page)', num),
+      h('div', { class: 'dialog-actions' },
+        h('span', { class: 'grow' }),
+        h('button', { type: 'button', class: 'btn', onclick: () => dlg.close() }, 'Cancel'),
+        h('button', { type: 'submit', class: 'btn primary' }, 'Save'),
+      ),
+    ),
+  );
+  dlg.addEventListener('close', () => dlg.remove());
+  document.body.append(dlg);
+  dlg.showModal();
+}
+
 // ---------- Lecture page: Slides / Notes / Flashcards / Quiz ----------
 export async function lectureHubView(id) {
   const lecture = store.getLecture(id);
@@ -32,9 +58,11 @@ export async function lectureHubView(id) {
     try {
       const { kind, slides: s, scanned } = await ai.readSlideFile(file);
       await ai.saveSlideFile(id, file, s);
-      // Notes and quiz came from the old file, so clear them.
-      await idb.del(idb.K.notes(id));
-      await idb.del(idb.K.quiz(id));
+      if (hasSlides) {
+        // Replacing the file: notes and quiz came from the old one, so clear them.
+        await idb.del(idb.K.notes(id));
+        await idb.del(idb.K.quiz(id));
+      }
       store.updateLecture(id, { fileName: file.name, kind, slideCount: s.length, scanned });
       lectureHubView(id);
     } catch (e) {
@@ -46,9 +74,11 @@ export async function lectureHubView(id) {
     topbar(lecture.title),
     h('main', {},
       h('p', { class: 'lecture-sub muted' },
-        [hasSlides && plural(slides.length, 'slide'), plural(cards.length, 'flashcard')].filter(Boolean).join(' · ')),
+        [lecture.number != null && `Lecture ${lecture.number}`, (hasSlides || lecture.slideCount) && plural(hasSlides ? slides.length : lecture.slideCount, 'slide'), plural(cards.length, 'flashcard')].filter(Boolean).join(' · ')),
       !hasSlides && h('div', { class: 'notice' },
-        h('p', {}, 'The slide file for this lecture isn’t saved on this device, so Slides, Notes and Quiz need it adding again. Your flashcards are kept.'),
+        h('p', {}, notes && quiz
+          ? 'Add this lecture’s slide file (PDF or PowerPoint) to see the slides here. Notes, flashcards and quiz work without it.'
+          : 'The slide file for this lecture isn’t saved on this device. Add it to see the slides and make notes and quizzes. Your flashcards are kept.'),
         h('label', { class: 'btn small', for: 'attach' }, 'Add slide file'),
       ),
       h('div', { class: 'tiles' },
@@ -62,10 +92,7 @@ export async function lectureHubView(id) {
       due ? h('button', { class: 'btn primary big', onclick: () => go(`#/study/${id}`) }, `Study ${due} due flashcard${due === 1 ? '' : 's'}`) : null,
       h('div', { class: 'row-actions bottom' },
         fileInput,
-        h('button', { class: 'btn', onclick: () => {
-          const t = prompt('Lecture name', lecture.title);
-          if (t && t.trim()) { store.updateLecture(id, { title: t.trim() }); lectureHubView(id); }
-        } }, 'Rename'),
+        h('button', { class: 'btn', onclick: () => detailsDialog(lecture, (patch) => { store.updateLecture(id, patch); lectureHubView(id); }) }, 'Edit name / number'),
         hasSlides && h('label', { class: 'btn', for: 'attach' }, 'Replace slide file'),
         h('button', { class: 'btn danger-outline', onclick: async () => {
           if (confirm(`Delete “${lecture.title}” with its ${plural(cards.length, 'flashcard')}, notes and quiz? This can’t be undone.`)) {

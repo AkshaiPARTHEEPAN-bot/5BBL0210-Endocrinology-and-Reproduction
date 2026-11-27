@@ -23,9 +23,37 @@ function save() {
   localStorage.setItem(KEY, JSON.stringify(data));
 }
 
-// Lecture 2 before Lecture 10: compare titles with numbers as numbers.
+// Sort by lecture number; lectures without a number go last, by name
+// (numbers in names compare as numbers, so "Lecture 2" comes before "Lecture 10").
 export const getLectures = () =>
-  [...data.lectures].sort((a, b) => a.title.localeCompare(b.title, undefined, { numeric: true, sensitivity: 'base' }) || a.createdAt - b.createdAt);
+  [...data.lectures].sort((a, b) =>
+    (a.number ?? Infinity) - (b.number ?? Infinity) ||
+    a.title.localeCompare(b.title, undefined, { numeric: true, sensitivity: 'base' }) ||
+    a.createdAt - b.createdAt);
+
+// Guess a lecture number from a file name like "Lecture 3 – Thyroid.pdf" or "L03_thyroid.pptx".
+export function guessNumber(name) {
+  const m = name.match(/\b(?:lecture|lec|l)[\s_-]*0*(\d{1,2})(?!\d)/i) || name.match(/^0*(\d{1,2})[\s_.-]/);
+  return m ? Number(m[1]) : null;
+}
+
+// Add built-in lectures (with their notes and quiz) the first time the app runs.
+// Remembered in `seeded`, so a built-in lecture you delete doesn't come back.
+export async function seedBuiltins(list) {
+  data.seeded ??= [];
+  const now = Date.now();
+  for (const b of list) {
+    if (data.seeded.includes(b.id)) continue;
+    if (!getLecture(b.id)) {
+      data.lectures.push({ id: b.id, title: b.title, number: b.number, createdAt: now, builtin: true, slideCount: b.slideCount });
+      for (const c of b.cards) addCardRaw(b.id, c.question, c.answer, now);
+      if (b.notes) await idb.set(idb.K.notes(b.id), { ...b.notes, createdAt: now });
+      if (b.quiz) await idb.set(idb.K.quiz(b.id), { questions: b.quiz, createdAt: now, lastScore: null });
+    }
+    data.seeded.push(b.id);
+    save();
+  }
+}
 export const getLecture = (id) => data.lectures.find((l) => l.id === id);
 export const getCards = (lectureId) =>
   lectureId ? data.cards.filter((c) => c.lectureId === lectureId) : [...data.cards];
@@ -96,7 +124,7 @@ export async function importData(json) {
   const parsed = JSON.parse(json);
   if (!Array.isArray(parsed.lectures) || !Array.isArray(parsed.cards)) throw new Error('Not a flashcards backup file');
   for (const l of data.lectures) await idb.deleteLectureData(l.id);
-  data = { lectures: parsed.lectures, cards: parsed.cards };
+  data = { lectures: parsed.lectures, cards: parsed.cards, seeded: parsed.seeded || parsed.lectures.filter((l) => l.builtin).map((l) => l.id) };
   save();
   for (const [id, x] of Object.entries(parsed.extra || {})) {
     if (x.slides) await idb.set(idb.K.slides(id), x.slides);

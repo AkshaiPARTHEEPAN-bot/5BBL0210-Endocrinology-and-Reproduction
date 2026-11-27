@@ -14,6 +14,7 @@ export function homeView() {
     const due = cards.filter((c) => isDueNow(c)).length;
     return h('li', {},
       h('a', { class: 'lecture', href: `#/lecture/${l.id}` },
+        h('span', { class: `lecture-num${l.number == null ? ' none' : ''}`, 'aria-hidden': 'true' }, l.number ?? '–'),
         h('span', { class: 'lecture-main' },
           h('span', { class: 'lecture-title' }, l.title),
           h('span', { class: 'lecture-meta' },
@@ -35,7 +36,7 @@ export function homeView() {
           ? h('button', { class: 'btn primary big', onclick: () => go('#/study/all') }, `Study all due (${dueNow})`)
           : h('p', { class: 'muted' }, all.length ? `Nothing due right now — ${whenNext(all) || 'all caught up'}.` : 'Upload a lecture to get started.'),
       ),
-      !hasKey && h('p', { class: 'notice' }, 'To make flashcards, notes and quizzes you need a Claude API key. ', h('a', { href: '#/settings' }, 'Add it in Settings'), '.'),
+      !hasKey && h('p', { class: 'notice' }, lectures.length ? 'To make flashcards, notes and quizzes for new lectures you need a Claude API key. ' : 'To make flashcards, notes and quizzes you need a Claude API key. ', h('a', { href: '#/settings' }, 'Add it in Settings'), '.'),
       h('div', { class: 'section-head' },
         h('h2', {}, lectures.length ? `Lectures (${lectures.length})` : 'Lectures'),
         h('a', { class: 'btn small', href: '#/upload' }, '+ Upload'),
