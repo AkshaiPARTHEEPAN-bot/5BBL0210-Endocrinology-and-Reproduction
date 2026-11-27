@@ -9,15 +9,15 @@ The home page lists all your lectures in number order (name files like `Lecture 
 | 🖼️ **Slides** | PDFs show the actual slide pages; PowerPoint shows each slide's text and speaker notes, with a button to open the file in PowerPoint |
 | 📝 **Notes** | Revision notes Claude writes from the slides: summary, topics as bullet points, key terms and key numbers |
 | 🃏 **Flashcards** | Spaced-repetition study (below), plus the card list for editing |
-| ❓ **Quiz** | 10 multiple-choice questions with explanations; options shuffle each attempt and your last score is shown |
+| ❓ **Quiz** | Single-best-answer MCQs (A–E) in the exam style. Get one wrong and it explains why your answer is wrong and why the right one is right; the end screen lists your mistakes to review |
 
-Notes and quizzes are made the first time you open them and saved; you can rewrite them or make new questions any time.
+Notes and quizzes (20 questions for new lectures) are made the first time you open them and saved; you can rewrite them or make new questions any time.
 
 Each lecture has a number (guessed from file names like `Lecture 3 – Thyroid.pdf`, editable with *Edit name / number*) that sets its place on the home page.
 
 ### Built-in lectures
 
-**Lecture 1 – Insulin and Diabetes** comes ready to use: 40 flashcards, revision notes and a 10-question quiz written from the 40 lecture slides (`src/content/lecture-01-insulin-diabetes.js`). It needs no API key. The slide PDF isn't included in the site; tap *Add slide file* on the lecture page once to view the slides on your device. Deleting a built-in lecture removes it for good on that device.
+**Lecture 1 – Insulin and Diabetes** comes ready to use: 40 flashcards, revision notes and a 24-question exam-style quiz written from the 40 lecture slides (`src/content/lecture-01-insulin-diabetes.js`). It needs no API key. The slide PDF isn't included in the site; tap *Add slide file* on the lecture page once to view the slides on your device. Deleting a built-in lecture removes it for good on that device.
 
 ### Flashcards
 

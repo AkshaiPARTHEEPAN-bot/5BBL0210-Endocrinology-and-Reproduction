@@ -45,18 +45,54 @@ const NOTES_SCHEMA = obj({
 });
 
 // ---------- quiz ----------
-const QUIZ_SYSTEM = `You write multiple-choice exam practice questions for ${STUDENT}.
+export const QUIZ_LENGTH = 20;
 
-Write 10 questions spread across the whole lecture. Mix recall (definitions, numbers) with understanding (mechanisms, what happens if a step changes, feedback, comparing related things).
-- question: clear and self-contained.
-- options: exactly 4 short options. Exactly one is correct. The wrong options should be plausible to a student who half-knows the topic, using real terms from the lecture. No "all of the above" or "none of the above".
-- answer_index: position (0–3) of the correct option.
-- explanation: 1–2 sentences on why the correct answer is right, and if useful why a tempting wrong option is wrong.
+const QUIZ_SYSTEM = `You write single-best-answer multiple-choice exam questions for ${STUDENT}. They must match the style of the module's exam.
+
+Write ${QUIZ_LENGTH} questions spread across the whole lecture. Each question has exactly 5 options (A–E) and exactly one best answer.
+
+Question styles to mix (as in the real exam):
+- An incomplete statement that the options complete, e.g. "Thyroid hormones:" or "In normal subjects oral glucose delivery induces:"
+- "Which of the following statements about X is TRUE?"
+- "Which of the following statements about X is FALSE?" (use for about 1 in 5 questions; the correct answer is then the false statement)
+- A short direct question with short options (a number, a cell type, a drug class).
+
+Examples of the exam style (the topic is only an example; write about the lecture):
+  Glucagon:
+  A. Is secreted by pancreatic β-cells.
+  B. Stimulates hepatic glycogenolysis.   <- correct
+  C. Lowers blood glucose.
+  D. Is a steroid hormone.
+  E. Is released mainly after a carbohydrate meal.
+
+  Which of the following statements about cortisol is FALSE?
+  A. Cortisol is synthesised from cholesterol.
+  B. Cortisol is secreted by the adrenal cortex.
+  C. Cortisol has anti-inflammatory actions.
+  D. Cortisol lowers blood glucose.   <- correct (it is the false one)
+  E. Cortisol secretion is stimulated by ACTH.
+
+Options:
+- Full statements (or short terms) of similar length and grammar, so the answer can't be spotted by its form.
+- Wrong options must be plausible to a student who half-knows the lecture: swapped numbers, the wrong organelle/cell/hormone, reversed effects, a fact that belongs to a different disease or drug. Use real terms from the lecture.
+- No "all of the above" / "none of the above".
+- Mix recall (numbers, definitions) with understanding (mechanisms, sequences, comparing similar things).
+
+For EVERY option write "why" (1–2 sentences) — this is shown to the student after they answer:
+- For the correct option: why it is right, with the key fact.
+- For each wrong option: exactly what is wrong with it and what the lecture actually says (e.g. "β-cells make up ~60–80%, not 20–40%").
+- In a FALSE/NOT/INCORRECT question, say "This is false, so it is the answer: …" for the answer and "True: … so not the answer" for the others.
+
+answer_index is the 0-based position of the correct option.
 
 ${GROUNDING}`;
 
 const QUIZ_SCHEMA = obj({
-  questions: arr(obj({ question: str, options: arr(str), answer_index: { type: 'integer' }, explanation: str })),
+  questions: arr(obj({
+    question: str,
+    options: arr(obj({ text: str, why: str })),
+    answer_index: { type: 'integer' },
+  })),
 });
 
 // ---------- shared request ----------
@@ -117,9 +153,13 @@ export async function generateNotes(lecture) {
 
 export async function generateQuiz(lecture) {
   const res = await ask({ system: QUIZ_SYSTEM, schema: QUIZ_SCHEMA, content: lectureContent(lecture, 'Write the quiz for this lecture.') });
-  const questions = (res.questions || []).filter(
-    (q) => clean(q.question) && Array.isArray(q.options) && q.options.length >= 2 && q.answer_index >= 0 && q.answer_index < q.options.length,
-  );
+  const questions = (res.questions || [])
+    .map((q) => ({
+      question: clean(q.question),
+      options: (q.options || []).map((o) => ({ text: clean(o.text), why: clean(o.why) })).filter((o) => o.text),
+      answer_index: q.answer_index,
+    }))
+    .filter((q) => q.question && q.options.length >= 3 && q.answer_index >= 0 && q.answer_index < q.options.length);
   if (!questions.length) throw new Error('No questions were produced. Please try again.');
   return questions;
 }

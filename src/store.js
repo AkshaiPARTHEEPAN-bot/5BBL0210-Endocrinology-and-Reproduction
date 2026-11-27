@@ -48,10 +48,20 @@ export async function seedBuiltins(list) {
       data.lectures.push({ id: b.id, title: b.title, number: b.number, createdAt: now, builtin: true, slideCount: b.slideCount });
       for (const c of b.cards) addCardRaw(b.id, c.question, c.answer, now);
       if (b.notes) await idb.set(idb.K.notes(b.id), { ...b.notes, createdAt: now });
-      if (b.quiz) await idb.set(idb.K.quiz(b.id), { questions: b.quiz, createdAt: now, lastScore: null });
+      if (b.quiz) await idb.set(idb.K.quiz(b.id), { questions: b.quiz, createdAt: now, lastScore: null, builtinVersion: b.quizVersion ?? 1 });
     }
     data.seeded.push(b.id);
     save();
+  }
+  // Built-in quizzes that have been improved since they were added: update them,
+  // unless the quiz was replaced with "New questions" (then it's the student's own).
+  for (const b of list) {
+    if (!b.quiz || !getLecture(b.id)) continue;
+    const q = await idb.get(idb.K.quiz(b.id));
+    const stored = q?.builtinVersion ?? (q && typeof q.questions?.[0]?.options?.[0] === 'string' ? 1 : null);
+    if (stored != null && stored < (b.quizVersion ?? 1)) {
+      await idb.set(idb.K.quiz(b.id), { questions: b.quiz, createdAt: now, lastScore: null, builtinVersion: b.quizVersion });
+    }
   }
 }
 export const getLecture = (id) => data.lectures.find((l) => l.id === id);
