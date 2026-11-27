@@ -1,4 +1,8 @@
 // Lectures that come built in, with flashcards, notes and quiz already written.
-import lecture01 from './lecture-01-insulin-diabetes.js';
+import { expand } from './helpers.js';
 
-export const BUILTIN_LECTURES = [lecture01];
+const modules = import.meta.glob('./lecture-*.js', { eager: true });
+
+export const BUILTIN_LECTURES = Object.values(modules)
+  .map((m) => expand(m.default))
+  .sort((a, b) => a.number - b.number);

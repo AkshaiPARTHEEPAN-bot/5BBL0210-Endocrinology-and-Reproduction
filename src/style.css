@@ -223,6 +223,9 @@ textarea:focus, input:focus { outline: 2px solid var(--accent); outline-offset: 
 .key-row { display: flex; gap: 8px; margin-bottom: 12px; }
 details { margin-bottom: 12px; }
 summary { cursor: pointer; color: var(--muted); font-size: 0.9rem; margin-bottom: 8px; }
+.settings label.toggle { flex-direction: row; align-items: flex-start; gap: 12px; font-weight: 400; font-size: 1rem; cursor: pointer; }
+.toggle input { width: 24px; height: 24px; flex: none; margin-top: 2px; accent-color: var(--green); }
+.status-warn { color: var(--amber); font-weight: 500; }
 .saved-msg { color: var(--green); font-weight: 600; }
 .legend li { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
 .legend b { margin-right: -4px; }

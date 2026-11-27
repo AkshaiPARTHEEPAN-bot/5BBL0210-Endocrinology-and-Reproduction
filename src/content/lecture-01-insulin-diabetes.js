@@ -1,9 +1,4 @@
-// Build a question: the first option is the correct one.
-const mcq = (question, options) => ({
-  question,
-  options: options.map(([text, why]) => ({ text, why })),
-  answer_index: 0,
-});
+import { mcq } from './helpers.js';
 
 // Lecture 1 – Insulin and diabetes. Flashcards, notes and quiz written from the
 // lecture slides (40 slides). Built in so it appears without an API key.

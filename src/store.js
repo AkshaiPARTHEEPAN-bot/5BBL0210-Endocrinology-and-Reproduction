@@ -37,6 +37,29 @@ export function guessNumber(name) {
   return m ? Number(m[1]) : null;
 }
 
+// Next free lecture number (one after the highest used).
+export const nextNumber = () => Math.max(0, ...data.lectures.map((l) => l.number ?? 0)) + 1;
+
+const NUMBER_WORDS = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen', 'Twenty'];
+export const numberWord = (n) => NUMBER_WORDS[n] ?? String(n);
+
+// "5BBL0210_-_Control_of_testicular_function_-_updated_75b5…f8.pdf" -> "Control of testicular function"
+export function cleanTitle(fileName) {
+  let t = fileName.replace(/\.(pptx|pdf)$/i, '')
+    .replace(/[_\s-]+[0-9a-f]{16,}$/i, '')       // long hash suffix
+    .replace(/^[0-9a-f]{6,}-/i, '')                // short hash prefix
+    .replace(/^\s*[0-9]?[A-Z]{3,4}\d{3,4}[_\s-]*/, '') // module code e.g. 5BBL0210
+    .replace(/_/g, ' ')
+    .replace(/\s*-\s*updated\b/i, '')
+    .replace(/\b(19|20)\d\d\b/g, '')               // year
+    .replace(/\b(?:lecture|lec)\s*\d+\b/i, '')      // "Lecture 3" (kept as the number instead)
+    .replace(/^[\s\-–:]+|[\s\-–:]+$/g, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+  if (!t) t = fileName.replace(/\.(pptx|pdf)$/i, '');
+  return t[0].toUpperCase() + t.slice(1);
+}
+
 // Add built-in lectures (with their notes and quiz) the first time the app runs.
 // Remembered in `seeded`, so a built-in lecture you delete doesn't come back.
 export async function seedBuiltins(list) {

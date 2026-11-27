@@ -39,10 +39,10 @@ export function homeView() {
       !hasKey && h('p', { class: 'notice' }, lectures.length ? 'To make flashcards, notes and quizzes for new lectures you need a Claude API key. ' : 'To make flashcards, notes and quizzes you need a Claude API key. ', h('a', { href: '#/settings' }, 'Add it in Settings'), '.'),
       h('div', { class: 'section-head' },
         h('h2', {}, lectures.length ? `Lectures (${lectures.length})` : 'Lectures'),
-        h('a', { class: 'btn small', href: '#/upload' }, '+ Upload'),
+        h('a', { class: 'btn small', href: '#/upload' }, '+ Add lecture'),
       ),
       lectures.length ? h('ul', { class: 'lectures' }, list)
-        : h('a', { class: 'empty-upload', href: '#/upload' }, h('span', { class: 'plus' }, '+'), 'Upload lecture slides (.pptx or .pdf)'),
+        : h('a', { class: 'empty-upload', href: '#/upload' }, h('span', { class: 'plus' }, '+'), 'Add lecture slides (.pdf or .pptx)'),
     ),
   );
 }
