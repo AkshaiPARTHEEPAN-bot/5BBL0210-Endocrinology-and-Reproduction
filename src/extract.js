@@ -1,9 +1,6 @@
 // Read the text from every slide of a .pptx or every page of a .pdf.
 import JSZip from 'jszip';
-import * as pdfjs from 'pdfjs-dist';
-import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
-
-pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
+import { pdfjs } from './pdf.js';
 
 export async function extractSlides(file) {
   const name = file.name.toLowerCase();
@@ -124,3 +121,6 @@ export function slidesToText(slides) {
 
 export const wordCount = (slides) =>
   slides.reduce((n, s) => n + `${s.text} ${s.notes}`.split(/\s+/).filter(Boolean).length, 0);
+
+// Slides with almost no text are probably images (scanned/exported as pictures).
+export const looksScanned = (slides) => wordCount(slides) < 5 * Math.max(1, slides.length);

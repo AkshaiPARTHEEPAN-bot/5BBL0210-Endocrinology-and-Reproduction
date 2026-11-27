@@ -1,5 +1,6 @@
 // All data lives in the browser's localStorage, so it survives reloads.
 import { newCardState } from './srs.js';
+import * as idb from './idb.js';
 
 const KEY = 'flashcards.v1';
 const KEY_SETTINGS = 'flashcards.settings.v1';
@@ -22,15 +23,17 @@ function save() {
   localStorage.setItem(KEY, JSON.stringify(data));
 }
 
-export const getLectures = () => [...data.lectures].sort((a, b) => a.createdAt - b.createdAt);
+// Lecture 2 before Lecture 10: compare titles with numbers as numbers.
+export const getLectures = () =>
+  [...data.lectures].sort((a, b) => a.title.localeCompare(b.title, undefined, { numeric: true, sensitivity: 'base' }) || a.createdAt - b.createdAt);
 export const getLecture = (id) => data.lectures.find((l) => l.id === id);
 export const getCards = (lectureId) =>
   lectureId ? data.cards.filter((c) => c.lectureId === lectureId) : [...data.cards];
 export const getCard = (id) => data.cards.find((c) => c.id === id);
 
-export function addLecture(title, source, cards) {
+export function addLecture(title, meta, cards) {
   const now = Date.now();
-  const lecture = { id: uid(), title, source, createdAt: now };
+  const lecture = { id: uid(), title, createdAt: now, ...meta };
   data.lectures.push(lecture);
   for (const c of cards) addCardRaw(lecture.id, c.question, c.answer, now);
   save();
@@ -62,26 +65,44 @@ export function deleteCard(id) {
   save();
 }
 
-export function renameLecture(id, title) {
+export function updateLecture(id, patch) {
   const l = getLecture(id);
-  if (l) { l.title = title; save(); }
+  if (l) { Object.assign(l, patch); save(); }
+  return l;
 }
 
-export function deleteLecture(id) {
+export async function deleteLecture(id) {
   data.lectures = data.lectures.filter((l) => l.id !== id);
   data.cards = data.cards.filter((c) => c.lectureId !== id);
   save();
+  await idb.deleteLectureData(id);
 }
 
-export function exportData() {
-  return JSON.stringify({ app: 'flashcards', version: 1, exportedAt: new Date().toISOString(), ...data }, null, 2);
+// Backup = lectures, cards, progress, slide text, notes and quizzes.
+// The original slide files are left out to keep the file small.
+export async function exportData() {
+  const extra = {};
+  for (const l of data.lectures) {
+    extra[l.id] = {
+      slides: await idb.get(idb.K.slides(l.id)),
+      notes: await idb.get(idb.K.notes(l.id)),
+      quiz: await idb.get(idb.K.quiz(l.id)),
+    };
+  }
+  return JSON.stringify({ app: 'flashcards', version: 2, exportedAt: new Date().toISOString(), ...data, extra }, null, 2);
 }
 
-export function importData(json) {
+export async function importData(json) {
   const parsed = JSON.parse(json);
   if (!Array.isArray(parsed.lectures) || !Array.isArray(parsed.cards)) throw new Error('Not a flashcards backup file');
+  for (const l of data.lectures) await idb.deleteLectureData(l.id);
   data = { lectures: parsed.lectures, cards: parsed.cards };
   save();
+  for (const [id, x] of Object.entries(parsed.extra || {})) {
+    if (x.slides) await idb.set(idb.K.slides(id), x.slides);
+    if (x.notes) await idb.set(idb.K.notes(id), x.notes);
+    if (x.quiz) await idb.set(idb.K.quiz(id), x.quiz);
+  }
 }
 
 export function getSettings() {
