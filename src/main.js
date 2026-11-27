@@ -9,7 +9,18 @@ import { quizView, endQuiz } from './views/quiz.js';
 import { settingsView } from './views/settings.js';
 import { newToken } from './ui.js';
 import { seedBuiltins } from './store.js';
-import { BUILTIN_LECTURES } from './content/index.js';
+
+// Bump when built-in lecture content changes, so devices pick up the new content.
+const CONTENT_VERSION = '2026-11-27.1';
+const CONTENT_KEY = 'flashcards.contentVersion';
+
+// The built-in lectures are only downloaded when there is something new to add.
+async function addBuiltinLectures() {
+  if (localStorage.getItem(CONTENT_KEY) === CONTENT_VERSION) return;
+  const { BUILTIN_LECTURES } = await import('./content/index.js');
+  await seedBuiltins(BUILTIN_LECTURES);
+  localStorage.setItem(CONTENT_KEY, CONTENT_VERSION);
+}
 
 // Screens:
 //   #/                          home: all lectures + due count
@@ -36,4 +47,4 @@ function route() {
 }
 
 window.addEventListener('hashchange', route);
-seedBuiltins(BUILTIN_LECTURES).catch((e) => console.error('Could not add built-in lectures', e)).finally(route);
+addBuiltinLectures().catch((e) => console.error('Could not add built-in lectures', e)).finally(route);

@@ -48,11 +48,11 @@ export function uploadView() {
           quiz.status === 'fulfilled' && quiz.value && `${quiz.value.length}-question quiz`].filter(Boolean);
         const failed = auto && [notes.status === 'rejected' && 'notes', quiz.status === 'rejected' && 'quiz'].filter(Boolean);
         row.className = 'status ok';
-        msg.replaceChildren(
+        msg.replaceChildren(...[
           `✓ ${made.join(', ')} `,
           h('a', { href: `#/lecture/${lecture.id}` }, 'Open'),
           failed?.length ? h('span', { class: 'status-warn' }, ` — couldn’t write the ${failed.join(' or ')} (${ai.friendlyError((notes.reason || quiz.reason))}); you can make ${failed.length > 1 ? 'them' : 'it'} from the lecture page.`) : null,
-        );
+        ].filter(Boolean));
       } catch (err) {
         console.error(err);
         row.className = 'status error';

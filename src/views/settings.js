@@ -21,7 +21,7 @@ export function settingsView() {
     h('main', { class: 'settings' },
       h('section', {},
         h('h2', {}, 'Claude API key'),
-        h('p', { class: 'muted small-text' }, 'Used to write flashcards from your slides. Get one at console.anthropic.com. It is stored only in this browser and sent only to Anthropic.'),
+        h('p', { class: 'muted small-text' }, 'Used to write flashcards, notes and quizzes for lectures you add. Get one at console.anthropic.com. It is stored only in this browser and sent only to Anthropic.'),
         h('div', { class: 'key-row' }, key,
           h('button', { class: 'btn small', type: 'button', onclick: (e) => {
             key.type = key.type === 'password' ? 'text' : 'password';

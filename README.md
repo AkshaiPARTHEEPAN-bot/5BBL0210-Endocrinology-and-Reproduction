@@ -15,22 +15,32 @@ Notes and quizzes (20 questions for new lectures) are made the first time you op
 
 Each lecture has a number (guessed from file names like `Lecture 3 – Thyroid.pdf`, editable with *Edit name / number*) that sets its place on the home page.
 
-### Built-in lectures
+### Built-in lectures (1–14)
 
-**Lecture 1 – Insulin and Diabetes** comes ready to use: 40 flashcards, revision notes and a 24-question exam-style quiz written from the 40 lecture slides (`src/content/lecture-01-insulin-diabetes.js`). It needs no API key. The slide PDF isn't included in the site; tap *Add slide file* on the lecture page once to view the slides on your device. Deleting a built-in lecture removes it for good on that device.
+All 14 lectures so far come ready to use, with flashcards, revision notes and an exam-style quiz written from the slides. They need no API key. In total there are 439 flashcards and 284 single-best-answer questions.
 
-### Flashcards
+| # | Lecture | Cards | Quiz |
+|---|---|---|---|
+| 1 | Insulin and Diabetes | 40 | 24 |
+| 2 | Incretin Hormones | 32 | 20 |
+| 3 | Fuel Homeostasis | 29 | 20 |
+| 4 | Hormonal Regulation of Fuel Homeostasis | 30 | 20 |
+| 5 | Food Intake 1: Leptin and Obesity | 32 | 20 |
+| 6 | Food Intake 2: Action of Leptin | 29 | 20 |
+| 7 | Obesity Therapeutics and Bariatric Surgery | 31 | 20 |
+| 8 | HPA Axis and Stress | 29 | 20 |
+| 9 | Thyroid Hormones and Energy Homeostasis | 29 | 20 |
+| 10 | Endocrine Control of Calcium Homeostasis | 29 | 20 |
+| 11 | Growth Hormone | 29 | 20 |
+| 12 | Hormonal Regulation of Puberty | 35 | 20 |
+| 13 | Testicular Function and Sperm Physiology | 32 | 20 |
+| 14 | Ovarian Function and the Menstrual Cycle | 33 | 20 |
 
-- **Upload** lecture slides as PowerPoint (`.pptx`) or PDF. The text of every slide (plus speaker notes in `.pptx`) is read in your browser.
-- **AI flashcards**: Claude writes 15–30 cards per lecture covering key concepts, definitions, mechanisms and numbers. Cards are grouped by lecture.
-- **Study mode**: one card at a time; tap to flip; rate it **Red** (didn't get it), **Amber** (kind of) or **Green** (got it).
-- **Spaced repetition**
-  - Red: comes back 3 cards later in the same session, then is due again 10 minutes later
-  - Amber: due again tomorrow
-  - Green: due in 3 days, and the gap doubles with each green in a row (3 → 6 → 12 → 24 days…). Any red or amber resets it.
-  - Only due cards are shown; the home screen shows how many are due today.
-- **Saved progress**: lectures, cards, ratings, notes, quizzes and slide files are kept in your browser's storage. Use *Settings → Download backup* to move them to another device (slide files aren't in the backup; re-add them on each lecture page).
-- **Edit/delete** any card (tap it in the lecture's card list, or the ✎ button while studying), add your own cards, rename or delete lectures.
+The content lives in `src/content/lecture-NN-*.js` (`npm test` checks every file). The slide PDFs are not included in the site; tap *Add slide file* on a lecture page once to view its slides on your device. Deleting a built-in lecture removes it for good on that device.
+
+### Adding future lectures
+
+Tap **+ Add lecture** (home page or Settings) and pick the PDF or PowerPoint. Claude reads every slide and writes flashcards, revision notes and a 20-question quiz automatically. New lectures are numbered after your last one (15, 16, …), or from a "Lecture N" in the file name. Turn off *Settings → Write notes and quiz automatically* to only make flashcards up front and write notes and quiz when you first open them.
 
 ## Using it
 
